@@ -1,6 +1,8 @@
 const express = require('express');
 const {Sequelize} = require("sequelize");
 const app = express();
+const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const sequelize = new Sequelize({
     dialect: "sqlite",
@@ -31,6 +33,14 @@ sequelize.sync({logging: console.log});
     }
 })();
 
+
+let corsOptions = {
+    origin: "http://localhost:8080"
+};
+
+app.use(cors(corsOptions));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
     res.json({
