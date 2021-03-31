@@ -16,7 +16,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 
 
 (async () => {
@@ -44,12 +44,11 @@ sequelize.sync({logging: console.log});
     }
 })();
 
- findOne = (req, res) => {
+findOne = (req, res) => {
     const id = req.params.id;
 
     Item.findByPk(id)
         .then(data => {
-            console.log(data)
             res.send(data);
         })
         .catch(err => {
@@ -59,9 +58,45 @@ sequelize.sync({logging: console.log});
         });
 };
 
+findChilds = (req, res) => {
+    const id = req.params.id;
+
+    Item.findAll({
+        where: {
+            idParent: id
+        }
+    })
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: "Error retrieving childs from the Item with id=" + id
+            });
+        });
+};
+
+findParents = (req, res) => {
+    const id = req.params.id;
+
+    Item.findByPk(id)
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: "Error retrieving parents from the Item with id=" + id
+            });
+        });
+};
+
 const router = require("express").Router();
 
 router.get("/:id", findOne);
+
+router.get("/parents/:id", findParents);
+
+router.get("/childs/:id", findChilds);
 
 router.get('/', (req, res) => {
     (async () => {
@@ -72,8 +107,6 @@ router.get('/', (req, res) => {
 });
 
 app.use('/', router);
-
-
 
 
 const port = process.env.PORT || 4000;

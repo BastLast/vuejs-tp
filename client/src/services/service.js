@@ -8,6 +8,15 @@ class Service {
   get(id) {
     return http.get(`/${id}`);
   }
+
+  getParents(id) {
+    return http.get(`/parents/${id}`);
+  }
+
+  getChilds(id) {
+    return http.get(`/childs/${id}`);
+  }
+
 }
 
 export default new Service();

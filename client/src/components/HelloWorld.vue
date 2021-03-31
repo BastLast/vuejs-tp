@@ -1,7 +1,11 @@
 <template>
   <div>
     <h4>test ?!</h4>
-    {{ items }}
+    parents : {{ parents }}
+    childs : {{ childs }}
+    current : {{ currentItem }}
+
+    <button @click="test" class="btn btn-success">Submit</button>
   </div>
 </template>
 
@@ -12,17 +16,41 @@ export default {
   name: "item-list",
   data() {
     return {
-      items: [1],
+      parents: [],
+      childs: [],
       currentItem: null,
-      currentIndex: -1,
-      title: ""
     };
   },
   methods: {
+    test() {
+      this.id++;
+      this.retrieveItems();
+    },
+
     retrieveItems() {
-      Service.getAll()
+      if (this.id === undefined) {
+        this.id = 1;
+      }
+      Service.get(this.id)
           .then(response => {
-            this.items = response.data;
+            this.currentItem = response.data;
+            console.log(response.data);
+          })
+          .catch(e => {
+            console.log(e);
+          });
+      Service.getParents(this.id)
+          .then(response => {
+            this.parents = response.data;
+            console.log(response.data);
+          })
+          .catch(e => {
+            console.log(e);
+          });
+
+      Service.getChilds(this.id)
+          .then(response => {
+            this.childs = response.data;
             console.log(response.data);
           })
           .catch(e => {
