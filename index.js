@@ -9,6 +9,16 @@ const sequelize = new Sequelize({
     storage: "database.sqlite"
 });
 
+
+const corsOptions = {
+    origin: "http://localhost:8080"
+};
+
+app.use(cors(corsOptions));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+
 (async () => {
     try {
         await sequelize.authenticate();
@@ -27,26 +37,44 @@ const Item = sequelize.define('item', {
 );
 
 sequelize.sync({logging: console.log});
+
 (async () => {
     if (await Item.count() === 0) {
         console.log("/!\\ La base de donnée est vide");
     }
 })();
 
+ findOne = (req, res) => {
+    const id = req.params.id;
 
-let corsOptions = {
-    origin: "http://localhost:8080"
+    Item.findByPk(id)
+        .then(data => {
+            console.log(data)
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: "Error retrieving Item with id=" + id
+            });
+        });
 };
 
-app.use(cors(corsOptions));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const router = require("express").Router();
 
-app.get('/', (req, res) => {
-    res.json({
-        message: 'slt !'
-    });
+router.get("/:id", findOne);
+
+router.get('/', (req, res) => {
+    (async () => {
+        res.json({
+            items: await Item.findAll()
+        });
+    })();
 });
+
+app.use('/', router);
+
+
+
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
