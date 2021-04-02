@@ -1,27 +1,40 @@
 <template>
   <div>
-    parents : {{ parents }}
-    childs : {{ childs }}
     current : {{ currentItem }}
+    <br>
+    <br>
     <div class="breadcrumb flat">
-      <a href="#" @click="test" class="active">Navigation</a>
-      <a href="#" @click="test">Comparer</a>
-      <a href="#" @click="test">Confirmer commande</a>
-      <a href="#" @click="test">Terminer</a>
+      <a href="#" v-for="(parent, i) in parents" :key="parent.id" v-on:click="newCurrent(parent)"
+      v-bind:class="{active: i===parents.length-1 }" >
+      {{ parent.name }}
+      </a>
+    </div>
+
+    <div>
+      <ul id="example-1">
+        <li v-for="child in childs" :key="child.id" v-on:click="newCurrent(child)">
+          <a href="#">{{ child.name }}</a>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
 
 <script>
+
+/*
+<a href="#" @click="test" class="active">Navigation</a>
+<a href="#" @click="test">Comparer</a>
+<a href="#" @click="test">Confirmer commande</a>
+<a href="#" @click="test">Terminer</a>*/
 import Service from "../services/service";
 
 export default {
   name: "item-list",
   data() {
     return {
-      parent: null,
+      parents: [],
       childs: [],
-      currentItem: null,
     };
   },
   methods: {
@@ -30,18 +43,15 @@ export default {
       this.retrieveItems();
     },
 
+    newCurrent(item) {
+      this.id = item.id;
+      this.retrieveItems();
+    },
+
     retrieveItems() {
       if (this.id === undefined) {
         this.id = 1;
       }
-      Service.get(this.id)
-          .then(response => {
-            this.currentItem = response.data;
-            console.log(response.data);
-          })
-          .catch(e => {
-            console.log(e);
-          });
       Service.getParents(this.id)
           .then(response => {
             this.parents = response.data;
@@ -86,7 +96,11 @@ body {
   padding-top: 100px;
   background: #689976;
   background: linear-gradient(#689976, #ACDACC);
-  font-family: 'Merriweather Sans', arial, verdana,serif;
+  font-family: 'Merriweather Sans', arial, verdana, serif;
+}
+
+#example-1 {
+  margin-top: 20px;
 }
 
 .breadcrumb {
