@@ -1,12 +1,11 @@
 <template>
   <div>
-    current : {{ currentItem }}
     <br>
     <br>
     <div class="breadcrumb flat">
       <a href="#" v-for="(parent, i) in parents" :key="parent.id" v-on:click="newCurrent(parent)"
-      v-bind:class="{active: i===parents.length-1 }" >
-      {{ parent.name }}
+         v-bind:class="{active: i===parents.length-1 }">
+        {{ parent.name }}
       </a>
     </div>
 
@@ -35,36 +34,45 @@ export default {
     return {
       parents: [],
       childs: [],
+      currentItem: null,
     };
   },
   methods: {
-    test() {
-      this.id++;
-      this.retrieveItems();
-    },
-
     newCurrent(item) {
       this.id = item.id;
       this.retrieveItems();
     },
 
-    retrieveItems() {
+    async retrieveItems() {
       if (this.id === undefined) {
         this.id = 1;
       }
-      Service.getParents(this.id)
+      this.parents = [];
+      await Service.get(this.id)
           .then(response => {
-            this.parents = response.data;
+            this.currentItem = response.data;
             console.log(response.data);
           })
           .catch(e => {
             console.log(e);
           });
+      this.parents.push(this.currentItem);
 
+      let lastParentId = this.currentItem.idParent
+      while (lastParentId !== null) {
+        await Service.get(lastParentId)
+            .then(response => {
+              this.parents.push(response.data);
+              lastParentId = response.data.idParent
+            })
+            .catch(e => {
+              console.log(e);
+            });
+      }
+      this.parents.reverse()
       Service.getChilds(this.id)
           .then(response => {
             this.childs = response.data;
-            console.log(response.data);
           })
           .catch(e => {
             console.log(e);
